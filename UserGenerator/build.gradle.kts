@@ -16,6 +16,7 @@ dependencies {
     implementation("com.google.protobuf:protobuf-java:${protobufVersion}")
     implementation("com.google.protobuf:protobuf-java-util:${protobufVersion}")
     compileOnly("org.apache.tomcat:annotations-api:6.0.53")
+    testImplementation("org.springframework.boot:spring-boot-starter-test")
 }
 
 protobuf {
