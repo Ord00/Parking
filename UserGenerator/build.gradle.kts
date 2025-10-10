@@ -18,32 +18,3 @@ dependencies {
     compileOnly("org.apache.tomcat:annotations-api:6.0.53")
     testImplementation("org.springframework.boot:spring-boot-starter-test")
 }
-
-protobuf {
-    protoc {
-        artifact = "com.google.protobuf:protoc:${protocVersion}"
-    }
-    plugins {
-        create("grpc") {
-            artifact = "io.grpc:protoc-gen-grpc-java:${grpcVersion}"
-        }
-    }
-    generateProtoTasks {
-        all().forEach { task ->
-            task.plugins {
-                create("grpc")
-            }
-        }
-    }
-}
-
-sourceSets {
-    main {
-        java {
-            srcDirs(
-                "build/generated/source/proto/main/grpc",
-                "build/generated/source/proto/main/java"
-            )
-        }
-    }
-}
