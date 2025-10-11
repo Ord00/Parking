@@ -1,8 +1,7 @@
 package com.parking.services;
 
-import com.parking.grpc.GenerateUserRequest;
 import com.parking.grpc.UserResponse;
-import io.grpc.stub.StreamObserver;
+import org.springframework.stereotype.Service;
 import org.springframework.web.bind.annotation.PostMapping;
 
 import java.util.Arrays;
@@ -10,6 +9,7 @@ import java.util.List;
 import java.util.Random;
 import java.util.concurrent.atomic.AtomicInteger;
 
+@Service
 public class GenerationService {
 
     private final AtomicInteger idCounter = new AtomicInteger(1);
@@ -30,8 +30,7 @@ public class GenerationService {
     );
 
     @PostMapping("/gen/user")
-    public void generateUser(GenerateUserRequest request,
-                             StreamObserver<UserResponse> responseObserver) {
+    public UserResponse generateUser() {
 
         int userId = idCounter.getAndIncrement();
         String firstName = firstNames.get(random.nextInt(firstNames.size()));
@@ -39,18 +38,13 @@ public class GenerationService {
         String login = firstName.toLowerCase() + "." + lastName.toLowerCase() + userId;
         String userRole = userRoles.get(random.nextInt(userRoles.size()));
 
-        UserResponse response = UserResponse.newBuilder()
+        return UserResponse.newBuilder()
                 .setId(userId)
                 .setFirstName(firstName)
                 .setLastName(lastName)
                 .setLogin(login)
                 .setUserRole(userRole)
                 .build();
-
-        System.out.println("Generated user: " + firstName + " " + lastName + " (ID: " + userId + ")");
-
-        responseObserver.onNext(response);
-        responseObserver.onCompleted();
     }
 
 }
