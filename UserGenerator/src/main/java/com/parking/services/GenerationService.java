@@ -1,17 +1,25 @@
 package com.parking.services;
 
+import com.parking.grpc.GenerateUserRequest;
+import com.parking.grpc.GenerationServiceGrpc;
 import com.parking.grpc.UserResponse;
+import io.grpc.Server;
+import io.grpc.ServerBuilder;
+import io.grpc.stub.StreamObserver;
+import jakarta.annotation.PostConstruct;
+import jakarta.annotation.PreDestroy;
 import org.springframework.stereotype.Service;
-import org.springframework.web.bind.annotation.PostMapping;
 
+import java.io.IOException;
 import java.util.Arrays;
 import java.util.List;
 import java.util.Random;
 import java.util.concurrent.atomic.AtomicInteger;
 
 @Service
-public class GenerationService {
+public class GenerationService extends GenerationServiceGrpc.GenerationServiceImplBase {
 
+    private Server server;
     private final AtomicInteger idCounter = new AtomicInteger(1);
     private final Random random = new Random();
 
@@ -26,11 +34,49 @@ public class GenerationService {
     );
 
     private final List<String> userRoles = Arrays.asList(
-            "USER", "ADMIN", "MODERATOR", "VIEWER", "EDITOR"
+            "USER", "ADMIN", "EMPLOYEE"
     );
 
-    @PostMapping("/gen/user")
-    public UserResponse generateUser() {
+    @PostConstruct
+    public void start() throws IOException {
+        int port = 50051;
+        server = ServerBuilder.forPort(port)
+                .addService(this)
+                .build()
+                .start();
+
+        System.out.println("=== UserGenerator gRPC Server Started ===");
+        System.out.println("Port: " + port);
+        System.out.println("Ready to generate users...");
+
+        new Thread(() -> {
+            try {
+                server.awaitTermination();
+            } catch (InterruptedException e) {
+                System.err.println("gRPC server interrupted: " + e.getMessage());
+                Thread.currentThread().interrupt();
+            }
+        }).start();
+
+        Runtime.getRuntime().addShutdownHook(new Thread(() -> {
+            System.out.println("Shutting down gRPC server...");
+            if (server != null) {
+                server.shutdown();
+            }
+        }));
+    }
+
+    @PreDestroy
+    public void stop() {
+        if (server != null) {
+            server.shutdown();
+            System.out.println("gRPC Server stopped");
+        }
+    }
+
+    @Override
+    public void generateUser(GenerateUserRequest request,
+                                     StreamObserver<UserResponse> responseObserver) {
 
         int userId = idCounter.getAndIncrement();
         String firstName = firstNames.get(random.nextInt(firstNames.size()));
@@ -38,13 +84,16 @@ public class GenerationService {
         String login = firstName.toLowerCase() + "." + lastName.toLowerCase() + userId;
         String userRole = userRoles.get(random.nextInt(userRoles.size()));
 
-        return UserResponse.newBuilder()
+        UserResponse response = UserResponse.newBuilder()
                 .setId(userId)
                 .setFirstName(firstName)
                 .setLastName(lastName)
                 .setLogin(login)
                 .setUserRole(userRole)
                 .build();
+
+        responseObserver.onNext(response);
+        responseObserver.onCompleted();
     }
 
 }

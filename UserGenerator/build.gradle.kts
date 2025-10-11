@@ -3,6 +3,10 @@ plugins {
     id("com.google.protobuf")
 }
 
+springBoot {
+    mainClass.set("com.parking.UserGeneratorApplication")
+}
+
 val grpcVersion = "1.61.0"
 val protobufVersion = "4.28.2"
 val protocVersion = protobufVersion
