@@ -70,13 +70,13 @@ public class GenerationService extends GenerationServiceGrpc.GenerationServiceIm
     public void stop() {
         if (server != null) {
             server.shutdown();
-            System.out.println("gRPC Server stopped");
+            System.out.println("gRPC Server stopped!");
         }
     }
 
     @Override
     public void generateUser(GenerateUserRequest request,
-                                     StreamObserver<UserResponse> responseObserver) {
+                             StreamObserver<UserResponse> responseObserver) {
 
         int userId = idCounter.getAndIncrement();
         String firstName = firstNames.get(random.nextInt(firstNames.size()));
@@ -95,5 +95,4 @@ public class GenerationService extends GenerationServiceGrpc.GenerationServiceIm
         responseObserver.onNext(response);
         responseObserver.onCompleted();
     }
-
 }
