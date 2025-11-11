@@ -18,7 +18,10 @@ public class RegistrarService {
 
     @PostConstruct
     public void init() {
-        this.channel = ManagedChannelBuilder.forAddress("localhost", 50051)
+        String grpcHost = System.getenv().getOrDefault("GRPC_SERVER_HOST", "nginx");
+        int grpcPort = Integer.parseInt(System.getenv().getOrDefault("GRPC_SERVER_PORT", "50052"));
+
+        this.channel = ManagedChannelBuilder.forAddress(grpcHost, grpcPort)
                 .usePlaintext()
                 .build();
         this.blockingStub = GenerationServiceGrpc.newBlockingStub(channel);

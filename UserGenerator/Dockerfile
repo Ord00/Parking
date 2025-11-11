@@ -1,18 +1,19 @@
-FROM gradle:7.4-jdk22-alpine AS build
+FROM gradle:8.5-jdk21-jammy AS build
 WORKDIR /app
 COPY build.gradle.kts .
-COPY ../settings.gradle.kts .
-COPY src ./src
-RUN gradle clean build -x test
+COPY settings.gradle.kts .
+COPY ./Model ./Model
+COPY ./UserGenerator ./UserGenerator
+RUN gradle :UserGenerator:bootJar -x test --stacktrace --no-daemon
 
 FROM build AS publish
-RUN mkdir -p /export
-RUN cp build/libs/*.jar /export/app.jar
+WORKDIR /export
+COPY --from=build /app/UserGenerator/build/libs/UserGenerator-0.0.1-SNAPSHOT.jar app.jar
 
-FROM amazoncorretto:22-alpine-jre AS final
+FROM eclipse-temurin:21-jre-jammy AS final
 VOLUME /tmp
 
-RUN addgroup -S spring && adduser -S spring -G spring
+RUN groupadd -r spring && useradd -r -g spring spring
 USER spring
 
 WORKDIR /app

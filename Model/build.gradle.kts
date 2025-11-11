@@ -1,5 +1,5 @@
 plugins {
-    id("com.google.protobuf")
+    id("com.google.protobuf") version "0.9.4"
 }
 
 val grpcVersion = "1.61.0"

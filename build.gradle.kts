@@ -1,12 +1,17 @@
 plugins {
     id("java")
-    id("org.springframework.boot") version "3.5.3"
+    id("org.springframework.boot") version "3.5.3" apply false
     id("io.spring.dependency-management") version "1.1.7"
-    id("com.google.protobuf") version "0.9.4" apply false
 }
 
 group = "com.parking"
 version = "1.0-SNAPSHOT"
+
+dependencyManagement {
+    imports {
+        mavenBom("org.springframework.boot:spring-boot-dependencies:3.5.3")
+    }
+}
 
 allprojects {
     apply(plugin = "java")
@@ -38,6 +43,7 @@ subprojects {
         testImplementation("org.junit.jupiter:junit-jupiter")
         compileOnly("org.projectlombok:lombok:1.18.30")
         annotationProcessor("org.projectlombok:lombok:1.18.30")
+        implementation("javax.annotation:javax.annotation-api:1.3.2")
     }
 
     tasks.withType<Test> {
