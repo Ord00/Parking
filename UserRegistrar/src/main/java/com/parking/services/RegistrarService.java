@@ -8,18 +8,25 @@ import io.grpc.ManagedChannel;
 import io.grpc.ManagedChannelBuilder;
 import jakarta.annotation.PostConstruct;
 import jakarta.annotation.PreDestroy;
+import lombok.RequiredArgsConstructor;
+import org.springframework.beans.factory.annotation.Value;
 import org.springframework.stereotype.Service;
 
 @Service
+@RequiredArgsConstructor
 public class RegistrarService {
 
     private ManagedChannel channel;
     private GenerationServiceGrpc.GenerationServiceBlockingStub blockingStub;
 
+    @Value("${grpc.server.host}")
+    private String grpcHost;
+
+    @Value("${grpc.server.port}")
+    private int grpcPort;
+
     @PostConstruct
     public void init() {
-        String grpcHost = System.getenv().getOrDefault("GRPC_SERVER_HOST", "nginx");
-        int grpcPort = Integer.parseInt(System.getenv().getOrDefault("GRPC_SERVER_PORT", "50052"));
 
         this.channel = ManagedChannelBuilder.forAddress(grpcHost, grpcPort)
                 .usePlaintext()

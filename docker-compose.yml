@@ -1,17 +1,14 @@
 services:
-  user_generator:
+  user-generator:
     build:
       context: .
       dockerfile: UserGenerator/Dockerfile
     environment:
-      GRPC_SERVER_HOST: "nginx"
-      GRPC_SERVER_PORT: "50052"
+      GRPC_SERVER_PORT: "50051"
     networks:
       - app-network
-    ports:
-      - "8082:8082"
-    #deploy:
-    #  replicas: 3
+    deploy:
+      replicas: 3
     restart: unless-stopped
     healthcheck:
       test: [ "CMD", "curl", "-f", "http://localhost:8082/actuator/health" ]
@@ -20,12 +17,15 @@ services:
       retries: 3
       start_period: 90s
 
-  user_registrar:
+  user-registrar:
     build:
       context: .
       dockerfile: UserRegistrar/Dockerfile
+    environment:
+      GRPC_SERVER_HOST: user-generator
+      GRPC_SERVER_PORT: "50051"
     depends_on:
-      user_generator:
+      user-generator:
         condition: service_healthy
     ports:
       - "8081:8081"
@@ -45,8 +45,8 @@ services:
     volumes:
       - ./nginx/nginx.conf:/etc/nginx/nginx.conf
       - ./logs:/var/log/nginx
-    #depends_on:
-    #  - user_generator
+    depends_on:
+      - user-generator
     networks:
       - app-network
     healthcheck:

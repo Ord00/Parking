@@ -8,6 +8,7 @@ import io.grpc.ServerBuilder;
 import io.grpc.stub.StreamObserver;
 import jakarta.annotation.PostConstruct;
 import jakarta.annotation.PreDestroy;
+import org.springframework.beans.factory.annotation.Value;
 import org.springframework.stereotype.Service;
 
 import java.io.IOException;
@@ -37,16 +38,19 @@ public class GenerationService extends GenerationServiceGrpc.GenerationServiceIm
             "USER", "ADMIN", "EMPLOYEE"
     );
 
+    @Value("${grpc.server.port}")
+    private int grpcPort;
+
     @PostConstruct
     public void start() throws IOException {
-        int port = 50051;
-        server = ServerBuilder.forPort(port)
+
+        server = ServerBuilder.forPort(grpcPort)
                 .addService(this)
                 .build()
                 .start();
 
         System.out.println("=== UserGenerator gRPC Server Started ===");
-        System.out.println("Port: " + port);
+        System.out.println("Port: " + grpcPort);
         System.out.println("Ready to generate users...");
 
         new Thread(() -> {
